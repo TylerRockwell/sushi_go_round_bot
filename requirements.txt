@@ -1,0 +1,6 @@
+Pillow
+pyscreenshot
+pyobjc-framework-Quartz
+pyobjc-core
+pyobjc
+pyAutoGUI
