@@ -2,7 +2,8 @@
 # with Chrome shifted to left half of screen
 
 import pyautogui
-import time
+import pyscreenshot as ImageGrab
+from time import sleep
 
 padding = { 'x': 20, 'y': 250 }
 width = 639
@@ -14,10 +15,14 @@ def leftClick():
 def setCursorPos(coords = (0, 0)):
     pyautogui.moveTo(coords[0] + padding['x'], coords[1] + padding['y'])
 
+def clickMenu(obj):
+    clickOn(obj)
+    sleep(.1)
+
 def clickOn(obj):
     setCursorPos(obj.coordinates)
     leftClick()
-    time.sleep(.1)
+    sleep(.05)
 
 def getCursorPos():
     x, y = pyautogui.position()
@@ -25,7 +30,7 @@ def getCursorPos():
     y -= padding['y']
     print x, y
 
-def startGame():
-    # Navigate through starting menus
-    clickOn() # Focus game window
-    clickOn((302, 372))
+def screenGrab():
+    box = (padding['x'], padding['y'], padding['x'] + width, padding['y'] + height)
+    image = ImageGrab.grab(box, backend='mac_screencapture')
+    return image
