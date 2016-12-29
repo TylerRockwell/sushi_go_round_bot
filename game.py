@@ -4,6 +4,7 @@ from game_object import *
 from phone import *
 from recipe import *
 import controller as Controller
+from time import sleep
 
 class Game:
     def __init__(self):
@@ -26,7 +27,6 @@ class Game:
 
     def buildFood(self):
         # name, location, orderButton location, unavailablePixel, startingQuantity
-        # These colors seem iffy. Investigate if problems arise
         self.rice =   Food('Rice',      (88, 338),  (516, 276), unavailablePixel = (118, 83, 85, 255), quantity = 10)
         self.shrimp = Food('Shrimp',    (41, 330),  (461, 210), quantity = 5)
         self.nori =   Food('Nori',      (40, 393),  (464, 269), quantity = 10)
@@ -49,8 +49,12 @@ class Game:
         self.focus()
         for ingredient in recipe.ingredients:
             Controller.clickOn(ingredient)
-            ingredient.consume
+            ingredient.consume()
         self.rollMat()
+        lowIngredients = filter(lambda x: x.almostOut(), recipe.ingredients)
+        for ingredient in lowIngredients:
+            self.restock(ingredient)
+        sleep(1)
 
     def rollMat(self):
         self.focus()
@@ -71,6 +75,7 @@ class Game:
         if food.availableForOrder(pixel):
             Controller.clickMenu(food.orderButton)
             Controller.clickMenu(self.phone.orderButton)
+            food.updateQuantity()
         else:
             Controller.clickMenu(self.phone.hangUpButton)
 

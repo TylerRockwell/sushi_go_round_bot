@@ -23,3 +23,5 @@ class Food(GameObject):
     def almostOut(self):
         return self.quantity < 3
 
+    def updateQuantity(self):
+        self.quantity += 10
