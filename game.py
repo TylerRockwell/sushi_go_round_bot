@@ -41,12 +41,12 @@ class Game:
             self.plates.append(GameObject('Plate', (x, 204)))
 
     def buildRecipes(self):
-        self.caliroll = Recipe('Caliroll', [self.nori, self.rice, self.roe])
-        self.gunkan = Recipe('Gunkan', [self.nori, self.rice, self.roe, self.roe])
-        self.onigiri = Recipe('Onigiri', [self.rice, self.rice, self.nori])
+        self.caliroll = Recipe('Caliroll', [self.nori, self.rice, self.roe], 4989)
+        self.gunkan = Recipe('Gunkan', [self.nori, self.rice, self.roe, self.roe], 4352)
+        self.onigiri = Recipe('Onigiri', [self.rice, self.rice, self.nori], 4345)
+        self.recipes = [self.caliroll, self.gunkan, self.onigiri]
 
     def prepareRecipe(self, recipe):
-        self.focus()
         for ingredient in recipe.ingredients:
             Controller.clickOn(ingredient)
             ingredient.consume()
@@ -54,19 +54,16 @@ class Game:
         lowIngredients = filter(lambda x: x.almostOut(), recipe.ingredients)
         for ingredient in lowIngredients:
             self.restock(ingredient)
-        sleep(1)
 
     def rollMat(self):
-        self.focus()
         Controller.clickOn(self.mat)
+        sleep(1.5)
 
     def clearTables(self):
-        self.focus()
         for plate in self.plates:
             Controller.clickOn(plate)
 
     def restock(self, food):
-        self.focus()
         Controller.clickMenu(self.phone)
         Controller.clickMenu(self.phone.menuFor(food))
         #TODO: Clean this mess up
@@ -81,12 +78,26 @@ class Game:
 
     def start(self):
         self.focus()
-        Controller.clickMenu(self.soundButton)
+        # Controller.clickMenu(self.soundButton)
         Controller.clickMenu(self.playButton)
         Controller.clickMenu(self.continueButton)
         Controller.clickMenu(self.skipButton)
         Controller.clickMenu(self.continueButton)
 
+    def getCustomerOrders(self):
+        return Controller.getAllOrders()
+
+    def prepareCustomerOrders(self, orders):
+        for code in orders:
+            results = filter(lambda recipe: recipe.withCode(code), self.recipes)
+            if results: self.prepareRecipe(results[0])
+
 if __name__ == "__main__":
     g = Game()
     g.start()
+    while True:
+        orders = g.getCustomerOrders()
+        g.prepareCustomerOrders(orders)
+        sleep(3)
+        g.clearTables()
+        sleep(3)
