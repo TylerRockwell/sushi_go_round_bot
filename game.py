@@ -47,11 +47,12 @@ class Game:
         self.recipes = [self.caliroll, self.gunkan, self.onigiri]
 
     def prepareRecipe(self, recipe):
+        print 'Preparing ' + recipe.name
         for ingredient in recipe.ingredients:
             Controller.clickOn(ingredient)
             ingredient.consume()
         self.rollMat()
-        lowIngredients = filter(lambda x: x.almostOut(), recipe.ingredients)
+        lowIngredients = list(set(filter(lambda x: x.almostOut(), recipe.ingredients)))
         for ingredient in lowIngredients:
             self.restock(ingredient)
 
@@ -60,6 +61,7 @@ class Game:
         sleep(1.5)
 
     def clearTables(self):
+        print 'Clearing tables'
         for plate in self.plates:
             Controller.clickOn(plate)
 
@@ -70,11 +72,15 @@ class Game:
         location = tuple(map(lambda x: x*2, food.orderLocation()))
         pixel = Controller.screenGrab().getpixel(location)
         if food.availableForOrder(pixel):
+            print food.name + ' is available...Ordering'
             Controller.clickMenu(food.orderButton)
             Controller.clickMenu(self.phone.orderButton)
             food.updateQuantity()
         else:
+            print food.name + ' is unavailable...Hanging up'
             Controller.clickMenu(self.phone.hangUpButton)
+            sleep(3)
+            self.restock(food)
 
     def start(self):
         self.focus()
@@ -85,6 +91,7 @@ class Game:
         Controller.clickMenu(self.continueButton)
 
     def getCustomerOrders(self):
+        print 'Gathering customer orders'
         return Controller.getAllOrders()
 
     def prepareCustomerOrders(self, orders):
@@ -93,11 +100,14 @@ class Game:
             if results: self.prepareRecipe(results[0])
 
 if __name__ == "__main__":
+    print 'Starting a new game'
     g = Game()
+    print 'Getting past menus'
     g.start()
     while True:
         orders = g.getCustomerOrders()
         g.prepareCustomerOrders(orders)
+        g.clearTables()
         sleep(3)
         g.clearTables()
         sleep(3)

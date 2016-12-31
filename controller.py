@@ -45,7 +45,6 @@ def rgbSum(box):
     order = image.crop(box)
     order = ImageOps.grayscale(order)
     a = array(order.getcolors()).sum()
-    print 'Image sum: ' + str(a)
     return a
 
 def getCustomerOrder(seatPosition):
@@ -58,5 +57,4 @@ def getAllOrders():
     orders = []
     for seat in xrange(6):
         orders.append(getCustomerOrder(seat))
-    print orders
     return orders
