@@ -40,12 +40,11 @@ def screenGrab():
     return image
 
 def rgbSum(box):
-    # box = (padding['x'], padding['y'], padding['x'] + width, padding['y'] + height)
     image = screenGrab()
-    order = image.crop(box)
-    order = ImageOps.grayscale(order)
-    a = array(order.getcolors()).sum()
-    return a
+    orderImage = image.crop(box)
+    orderImage = ImageOps.grayscale(order)
+    value = array(orderImage.getcolors()).sum()
+    return value
 
 def getCustomerOrder(seatPosition):
     seatCoordinates = [51, 253, 455, 657, 859, 1061]

@@ -24,6 +24,7 @@ class Game:
         self.playButton = Button('Play', (311, 206))
         self.continueButton = Button('Continue', (317, 393))
         self.skipButton = Button('Skip', (579, 455))
+        self.advanceButton = Button('Advance', boundingBox = (348, 714, 931, 797), colorSum = 49559)
 
     def buildFood(self):
         # name, location, orderButton location, unavailablePixel, startingQuantity
@@ -41,7 +42,7 @@ class Game:
             self.plates.append(GameObject('Plate', (x, 204)))
 
     def buildRecipes(self):
-        self.caliroll = Recipe('Caliroll', [self.nori, self.rice, self.roe], 4989)
+        self.caliroll = Recipe('California Roll', [self.nori, self.rice, self.roe], 4989)
         self.gunkan = Recipe('Gunkan', [self.nori, self.rice, self.roe, self.roe], 4352)
         self.onigiri = Recipe('Onigiri', [self.rice, self.rice, self.nori], 4345)
         self.recipes = [self.caliroll, self.gunkan, self.onigiri]
@@ -99,15 +100,23 @@ class Game:
             results = filter(lambda recipe: recipe.withCode(code), self.recipes)
             if results: self.prepareRecipe(results[0])
 
+    def isLevelComplete(self):
+        return self.advanceButton.isPresent(self.colorAverage(self.advanceButton.boundingBox))
+
+    def colorAverage(self, box):
+        return Controller.rgbSum(box)
+
 if __name__ == "__main__":
     print 'Starting a new game'
     g = Game()
     print 'Getting past menus'
     g.start()
-    while True:
+    won = False
+    while not won:
         orders = g.getCustomerOrders()
         g.prepareCustomerOrders(orders)
         g.clearTables()
         sleep(3)
         g.clearTables()
         sleep(3)
+        won = g.isLevelComplete()
