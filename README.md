@@ -7,11 +7,11 @@ A python bot that can play [Sushi Go Round](http://www.miniclip.com/games/sushi-
 #### Features
 * Plays without human interaction
 * Retrieves customer orders
-* Can prepare 3 different recipes
+* Can prepare 4 different recipes
 * Automatically restocks ingredients when stock is low
 
 #### Limitations
-* Currently only completes the first level
+* Currently only completes the first 2 levels
 * Currently implemented only on Retina display set to 1920x1080
 
 #### Known Issues

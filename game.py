@@ -20,8 +20,8 @@ class Game:
         Controller.clickOn(self)
 
     def buildButtons(self):
-        self.soundButton = Button('Sound', (302, 372))
-        self.playButton = Button('Play', (311, 206))
+        self.soundButton = Button('Sound', (302, 372), boundingBox = (499, 717, 768, 772))
+        self.playButton = Button('Play', (311, 206), boundingBox = (448, 342, 825, 477))
         self.continueButton = Button('Continue', (317, 393))
         self.skipButton = Button('Skip', (579, 455))
         self.advanceButton = Button('Advance', boundingBox = (348, 714, 931, 797), colorSum = 49559)
@@ -42,10 +42,11 @@ class Game:
             self.plates.append(GameObject('Plate', (x, 204)))
 
     def buildRecipes(self):
-        self.caliroll = Recipe('California Roll', [self.nori, self.rice, self.roe], 4989)
+        self.caliRoll = Recipe('California Roll', [self.nori, self.rice, self.roe], 4989)
         self.gunkan = Recipe('Gunkan', [self.nori, self.rice, self.roe, self.roe], 4352)
         self.onigiri = Recipe('Onigiri', [self.rice, self.rice, self.nori], 4345)
-        self.recipes = [self.caliroll, self.gunkan, self.onigiri]
+        self.salmonRoll = Recipe('Salmon Roll', [self.rice, self.nori, self.salmon, self.salmon], 4320)
+        self.recipes = [self.caliRoll, self.gunkan, self.onigiri, self.salmonRoll]
 
     def prepareRecipe(self, recipe):
         print 'Preparing ' + recipe.name
@@ -66,7 +67,7 @@ class Game:
         for plate in self.plates:
             Controller.clickOn(plate)
 
-    def restock(self, food):
+    def restock(self, food, attempt = 0):
         Controller.clickMenu(self.phone)
         Controller.clickMenu(self.phone.menuFor(food))
         #TODO: Clean this mess up
@@ -81,12 +82,12 @@ class Game:
             print food.name + ' is unavailable...Hanging up'
             Controller.clickMenu(self.phone.hangUpButton)
             sleep(3)
-            self.restock(food)
+            if attempt < 3: self.restock(food, attempt + 1)
 
     def start(self):
         self.focus()
-        # Controller.clickMenu(self.soundButton)
-        Controller.clickMenu(self.playButton)
+        Controller.clickWithin(self.soundButton)
+        Controller.clickWithin(self.playButton)
         Controller.clickMenu(self.continueButton)
         Controller.clickMenu(self.skipButton)
         Controller.clickMenu(self.continueButton)
@@ -106,17 +107,21 @@ class Game:
     def colorAverage(self, box):
         return Controller.rgbSum(box)
 
+    def advanceLevel(self):
+        print 'Level complete. Advancing to next stage'
+        Controller.clickWithin(self.advanceButton)
+        return Game() # TODO: Reset inventory properly
+
 if __name__ == "__main__":
     print 'Starting a new game'
     g = Game()
     print 'Getting past menus'
     g.start()
-    won = False
-    while not won:
+    while True:
         orders = g.getCustomerOrders()
         g.prepareCustomerOrders(orders)
         g.clearTables()
         sleep(3)
         g.clearTables()
         sleep(3)
-        won = g.isLevelComplete()
+        if g.isLevelComplete(): g = g.advanceLevel()

@@ -2,6 +2,7 @@
 # with Chrome shifted to left half of screen
 
 from PIL import ImageOps
+# from PIL import Image # Remove once all recipes have been coded
 from numpy import *
 import pyautogui
 import pyscreenshot as ImageGrab
@@ -27,6 +28,16 @@ def clickOn(obj):
     leftClick()
     sleep(.05)
 
+def clickWithin(obj):
+    # bounding box should be in the form (x1, y1, x2, y2)
+    box = retinaAdjustment(obj.boundingBox)
+    setCursorPos(tuple(box[:2]))
+    leftClick()
+    sleep(.05)
+
+def retinaAdjustment(box):
+    return tuple(map(lambda n: n/2, box))
+
 def getCursorPos():
     x, y = pyautogui.position()
     x -= padding['x']
@@ -41,9 +52,11 @@ def screenGrab():
 
 def rgbSum(box):
     image = screenGrab()
+    # image = Image.open('screenshot.png') # Remove once all recipes have been coded
     orderImage = image.crop(box)
-    orderImage = ImageOps.grayscale(order)
+    orderImage = ImageOps.grayscale(orderImage)
     value = array(orderImage.getcolors()).sum()
+    # print value
     return value
 
 def getCustomerOrder(seatPosition):
