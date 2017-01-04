@@ -1,23 +1,36 @@
 from button import *
+from controller import *
+from customer import *
 from food import *
+from game_location import *
 from game_object import *
 from phone import *
 from recipe import *
-import controller as Controller
 from time import sleep
+from vision import *
 
+# All coordinates are based on a Retina display at 1920x1200 resolution
+# with Chrome shifted to left half of screen
 class Game:
+    xOffset = 20
+    yOffset = 250
+    width = 639
+    height = 480
+
     def __init__(self):
         self.coordinates = (0, 0)
+        self.location = GameLocation(self.xOffset, self.yOffset, self.width, self.height)
+        self.vision = Vision(self.location)
+        self.controller = Controller(self.location)
         self.buildButtons()
         self.buildFood()
-        self.buildPlates()
+        self.buildCustomers()
         self.buildRecipes()
         self.mat = GameObject('Mat', (199, 380))
         self.phone = Phone()
 
     def focus(self):
-        Controller.clickOn(self)
+        self.controller.clickOn(self)
 
     def buildButtons(self):
         self.soundButton = Button('Sound', (302, 372), boundingBox = (499, 717, 768, 772))
@@ -35,11 +48,18 @@ class Game:
         self.salmon = Food('Salmon',    (41, 453),  (468, 331), quantity = 5)
         self.unagi =  Food('Unagi',     (103, 442), (548, 211), quantity = 5)
 
-    def buildPlates(self):
-        xCoordinates = [85, 189, 280, 387, 484, 581]
-        self.plates = []
-        for x in xCoordinates:
-            self.plates.append(GameObject('Plate', (x, 204)))
+    def buildCustomers(self):
+        orderCoordinates = [51, 253, 455, 657, 859, 1061]
+        orderWidth = 121
+        plateCoordinates = [85, 189, 280, 387, 484, 581]
+        self.customers = []
+        for position in xrange(6):
+            orderBox = (orderCoordinates[position], 122, orderCoordinates[position] + orderWidth, 151)
+            plateLocation = (plateCoordinates[position], 204)
+
+            plate = GameObject('Plate', plateLocation)
+            order = GameObject('Order Bubble', boundingBox = orderBox)
+            self.customers.append(Customer(plate, order))
 
     def buildRecipes(self):
         self.caliRoll = Recipe('California Roll', [self.nori, self.rice, self.roe], 4989)
@@ -49,52 +69,54 @@ class Game:
         self.recipes = [self.caliRoll, self.gunkan, self.onigiri, self.salmonRoll]
 
     def prepareRecipe(self, recipe):
+        if recipe.anyIngredientMissing():
+            return
         print 'Preparing ' + recipe.name
         for ingredient in recipe.ingredients:
-            Controller.clickOn(ingredient)
+            self.controller.clickOn(ingredient)
             ingredient.consume()
         self.rollMat()
-        lowIngredients = list(set(filter(lambda x: x.almostOut(), recipe.ingredients)))
-        for ingredient in lowIngredients:
+        for ingredient in recipe.lowIngredientList():
             self.restock(ingredient)
 
     def rollMat(self):
-        Controller.clickOn(self.mat)
+        self.controller.clickOn(self.mat)
         sleep(1.5)
 
     def clearTables(self):
         print 'Clearing tables'
-        for plate in self.plates:
-            Controller.clickOn(plate)
+        for customer in self.customers:
+            self.controller.clickOn(customer.plate)
 
     def restock(self, food, attempt = 0):
-        Controller.clickMenu(self.phone)
-        Controller.clickMenu(self.phone.menuFor(food))
+        self.controller.clickMenu(self.phone)
+        self.controller.clickMenu(self.phone.menuFor(food))
         #TODO: Clean this mess up
         location = tuple(map(lambda x: x*2, food.orderLocation()))
-        pixel = Controller.screenGrab().getpixel(location)
+        pixel = self.vision.screenGrab().getpixel(location)
         if food.availableForOrder(pixel):
             print food.name + ' is available...Ordering'
-            Controller.clickMenu(food.orderButton)
-            Controller.clickMenu(self.phone.orderButton)
+            self.controller.clickMenu(food.orderButton)
+            self.controller.clickMenu(self.phone.orderButton)
             food.updateQuantity()
         else:
             print food.name + ' is unavailable...Hanging up'
-            Controller.clickMenu(self.phone.hangUpButton)
+            self.controller.clickMenu(self.phone.hangUpButton)
+            print 'Waiting for income...'
             sleep(3)
             if attempt < 3: self.restock(food, attempt + 1)
 
     def start(self):
         self.focus()
-        Controller.clickWithin(self.soundButton)
-        Controller.clickWithin(self.playButton)
-        Controller.clickMenu(self.continueButton)
-        Controller.clickMenu(self.skipButton)
-        Controller.clickMenu(self.continueButton)
+        self.controller.clickWithin(self.soundButton)
+        self.controller.clickWithin(self.playButton)
+        self.controller.clickMenu(self.continueButton)
+        self.controller.clickMenu(self.skipButton)
+        self.controller.clickMenu(self.continueButton)
 
     def getCustomerOrders(self):
         print 'Gathering customer orders'
-        return Controller.getAllOrders()
+        return map(lambda customer: self.vision.analyze(customer.orderBox()), self.customers)
 
     def prepareCustomerOrders(self, orders):
         for code in orders:
@@ -102,14 +124,13 @@ class Game:
             if results: self.prepareRecipe(results[0])
 
     def isLevelComplete(self):
-        return self.advanceButton.isPresent(self.colorAverage(self.advanceButton.boundingBox))
-
-    def colorAverage(self, box):
-        return Controller.rgbSum(box)
+        return self.advanceButton.isPresent(self.vision.analyze(self.advanceButton.boundingBox))
 
     def advanceLevel(self):
         print 'Level complete. Advancing to next stage'
-        Controller.clickWithin(self.advanceButton)
+        for _ in xrange(2):
+            self.controller.clickWithin(self.advanceButton)
+            sleep(1)
         return Game() # TODO: Reset inventory properly
 
 if __name__ == "__main__":
@@ -120,8 +141,7 @@ if __name__ == "__main__":
     while True:
         orders = g.getCustomerOrders()
         g.prepareCustomerOrders(orders)
-        g.clearTables()
-        sleep(3)
-        g.clearTables()
-        sleep(3)
+        for _ in xrange(2):
+            g.clearTables()
+            sleep(3)
         if g.isLevelComplete(): g = g.advanceLevel()

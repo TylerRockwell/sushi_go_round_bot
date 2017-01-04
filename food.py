@@ -24,5 +24,10 @@ class Food(GameObject):
     def almostOut(self):
         return self.quantity < 5
 
+    def soldOut(self):
+        return self.quantity == 0
+
     def updateQuantity(self):
         self.quantity += self.startingQuantity
+
+

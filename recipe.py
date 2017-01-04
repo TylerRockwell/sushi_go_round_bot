@@ -6,3 +6,9 @@ class Recipe:
 
     def withCode(self, code):
         return self.code == code
+
+    def lowIngredientList(self):
+        return list(set(filter(lambda ingredient: ingredient.almostOut(), self.ingredients)))
+
+    def anyIngredientMissing(self):
+        return len(filter(lambda ingredient: ingredient.soldOut(), self.ingredients)) > 0
