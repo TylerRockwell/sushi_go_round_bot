@@ -1,6 +1,6 @@
 from numpy import *
 from PIL import ImageOps
-# from PIL import Image # Remove once all recipes have been coded
+from PIL import Image # Remove once all recipes have been coded
 import pyscreenshot
 
 class Vision:

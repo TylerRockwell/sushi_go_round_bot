@@ -15,6 +15,7 @@ class Game:
     yOffset = 250
     width = 639
     height = 480
+    # TODO: Organize/Standardize hardcoded pixel locations
 
     def __init__(self):
         self.coordinates = (0, 0)
@@ -48,17 +49,34 @@ class Game:
         self.unagi =  Food('Unagi',     (103, 442), (548, 211), quantity = 5)
 
     def buildCustomers(self):
-        orderCoordinates = [51, 253, 455, 657, 859, 1061]
-        orderWidth = 121
-        plateCoordinates = [85, 189, 280, 387, 484, 581]
         self.customers = []
         for position in xrange(6):
-            orderBox = (orderCoordinates[position], 122, orderCoordinates[position] + orderWidth, 151)
-            plateLocation = (plateCoordinates[position], 204)
+            self.customers.append(Customer(self.buildPlate(position), self.buildOrder(position), self.buildHappiness(position)))
 
-            plate = GameObject('Plate', plateLocation)
-            order = GameObject('Order Bubble', boundingBox = orderBox)
-            self.customers.append(Customer(plate, order))
+    def buildPlate(self, position):
+        plateCoordinates = [85, 189, 280, 387, 484, 581]
+        plateLocation = (plateCoordinates[position], 204)
+        plate = GameObject('Plate', plateLocation)
+        return plate
+
+    def buildOrder(self, position):
+        orderCoordinates = [51, 253, 455, 657, 859, 1061]
+        orderWidth = 121
+        orderY = 122
+        orderHeight = 29
+        orderBox = (orderCoordinates[position], orderY, orderCoordinates[position] + orderWidth, orderY + orderHeight)
+        order = GameObject('Order Bubble', boundingBox = orderBox)
+        return order
+
+    def buildHappiness(self, position):
+        happinessCoordinates = [100, 302, 504, 706, 908, 1110]
+        happinessWidth = 11
+        happinessY = 216
+        happinessHeight = 7
+        happinessBox = (happinessCoordinates[position], happinessY, happinessCoordinates[position] + happinessWidth, happinessY + happinessHeight)
+        happiness = GameObject('Happiness Indicator', boundingBox = happinessBox, colorSum = 442)
+        return happiness
+
 
     def buildRecipes(self):
         self.caliRoll = Recipe('California Roll', [self.nori, self.rice, self.roe], 4989)
