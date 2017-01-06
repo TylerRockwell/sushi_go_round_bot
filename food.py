@@ -29,5 +29,3 @@ class Food(GameObject):
 
     def updateQuantity(self):
         self.quantity += self.startingQuantity
-
-

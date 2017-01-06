@@ -8,7 +8,6 @@ from phone import *
 from recipe import *
 from time import sleep
 from vision import *
-
 # All coordinates are based on a Retina display at 1920x1200 resolution
 # with Chrome shifted to left half of screen
 class Game:
@@ -66,7 +65,9 @@ class Game:
         self.gunkan = Recipe('Gunkan', [self.nori, self.rice, self.roe, self.roe], 4352)
         self.onigiri = Recipe('Onigiri', [self.rice, self.rice, self.nori], 4345)
         self.salmonRoll = Recipe('Salmon Roll', [self.rice, self.nori, self.salmon, self.salmon], 4320)
-        self.recipes = [self.caliRoll, self.gunkan, self.onigiri, self.salmonRoll]
+        self.shrimpSushi = Recipe('Shrim Sushi', [self.rice, self.nori, self.shrimp, self.shrimp], 4767)
+        self.unagiSushi = Recipe('Unagi Sushi', [self.rice, self.nori, self.unagi, self.unagi], 4568)
+        self.recipes = [self.caliRoll, self.gunkan, self.onigiri, self.salmonRoll, self.shrimpSushi, self.unagiSushi]
 
     def prepareRecipe(self, recipe):
         if recipe.anyIngredientMissing():
@@ -94,6 +95,7 @@ class Game:
         #TODO: Clean this mess up
         location = tuple(map(lambda x: x*2, food.orderLocation()))
         pixel = self.vision.screenGrab().getpixel(location)
+        print str(food.quantity) + ' ' + food.name + ' remaining. Trying to restock'
         if food.availableForOrder(pixel):
             print food.name + ' is available...Ordering'
             self.controller.clickMenu(food.orderButton)
@@ -116,7 +118,10 @@ class Game:
 
     def getCustomerOrders(self):
         print 'Gathering customer orders'
-        return map(lambda customer: self.vision.analyze(customer.orderBox()), self.customers)
+        orders = map(lambda customer: self.vision.analyze(customer.orderBox()), self.customers)
+        # Reverse order to reduce last customer wait time
+        orders.reverse()
+        return orders
 
     def prepareCustomerOrders(self, orders):
         for code in orders:
@@ -127,8 +132,11 @@ class Game:
         return self.advanceButton.isPresent(self.vision.analyze(self.advanceButton.boundingBox))
 
     def advanceLevel(self):
-        print 'Level complete. Advancing to next stage'
+        print 'Level complete'
+        sleep(15)
+        # There are 2 continue buttons to start the next level
         for _ in xrange(2):
+            print 'Advancing to next level'
             self.controller.clickWithin(self.advanceButton)
             sleep(1)
         return Game() # TODO: Reset inventory properly
@@ -141,7 +149,6 @@ if __name__ == "__main__":
     while True:
         orders = g.getCustomerOrders()
         g.prepareCustomerOrders(orders)
-        for _ in xrange(2):
-            g.clearTables()
-            sleep(3)
+        sleep(6)
+        g.clearTables()
         if g.isLevelComplete(): g = g.advanceLevel()
