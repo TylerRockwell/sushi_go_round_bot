@@ -128,8 +128,8 @@ class Game:
 
     def start(self):
         self.focus()
-        self.controller.clickWithin(self.soundButton)
-        self.controller.clickWithin(self.playButton)
+        self.controller.clickOn(self.soundButton)
+        self.controller.clickOn(self.playButton)
         self.controller.clickMenu(self.continueButton)
         self.controller.clickMenu(self.skipButton)
         self.controller.clickMenu(self.continueButton)
@@ -155,7 +155,7 @@ class Game:
         # There are 2 continue buttons to start the next level
         for _ in xrange(2):
             print 'Advancing to next level'
-            self.controller.clickWithin(self.advanceButton)
+            self.controller.clickOn(self.advanceButton)
             sleep(1)
         return Game() # TODO: Reset inventory properly
 
