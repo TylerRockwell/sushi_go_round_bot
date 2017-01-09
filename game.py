@@ -24,6 +24,7 @@ class Game:
         self.controller = Controller(self.location)
         self.buildButtons()
         self.buildFood()
+        self.buildSake()
         self.buildCustomers()
         self.buildRecipes()
         self.mat = GameObject('Mat', (199, 380))
@@ -40,18 +41,25 @@ class Game:
         self.advanceButton = Button('Advance', boundingBox = (348, 714, 931, 797), colorSum = 49559)
 
     def buildFood(self):
-        # name, location, orderButton location, unavailablePixel, startingQuantity
-        self.rice =   Food('Rice',      (88, 338),  (516, 276), unavailablePixel = (118, 83, 85, 255), quantity = 10)
-        self.shrimp = Food('Shrimp',    (41, 330),  (461, 210), quantity = 5)
-        self.nori =   Food('Nori',      (40, 393),  (464, 269), quantity = 10)
-        self.roe =    Food('Roe',       (101, 388), (551, 275), quantity = 10)
-        self.salmon = Food('Salmon',    (41, 453),  (468, 331), quantity = 5)
-        self.unagi =  Food('Unagi',     (103, 442), (548, 211), quantity = 5)
+        # This list is getting long...perhaps there are other classes hiding here
+        # name, type, location, orderButton location, unavailablePixel, startingQuantity
+        self.rice =   Food('Rice',   'Rice',       (88, 338),  (516, 276), unavailablePixel = (118, 83, 85, 255),   quantity = 10)
+        self.shrimp = Food('Shrimp', 'Topping',    (41, 330),  (461, 210), quantity = 5)
+        self.nori =   Food('Nori',   'Topping',    (40, 393),  (464, 269), quantity = 10)
+        self.roe =    Food('Roe',    'Topping',    (101, 388), (551, 275), quantity = 10)
+        self.salmon = Food('Salmon', 'Topping',    (41, 453),  (468, 331), quantity = 5)
+        self.unagi =  Food('Unagi',  'Topping',    (103, 442), (548, 211), quantity = 5)
+
+    def buildSake(self):
+        sake1 =   Food('Sake',   'Sake',       (430, 370), (516, 273), unavailablePixel = (160, 160, 160, 255), quantity = 1)
+        sake2 =   Food('Sake',   'Sake',       (415, 342), (516, 273), unavailablePixel = (160, 160, 160, 255), quantity = 1)
+
+        self.sake = [sake1, sake2]
 
     def buildCustomers(self):
         self.customers = []
         for position in xrange(6):
-            self.customers.append(Customer(self.buildPlate(position), self.buildOrder(position), self.buildHappiness(position)))
+            self.customers.append(Customer('Customer ' + str(position), self.buildPlate(position), self.buildOrder(position), self.buildHappiness(position)))
 
     def buildPlate(self, position):
         plateCoordinates = [85, 189, 280, 387, 484, 581]
@@ -64,7 +72,12 @@ class Game:
         orderWidth = 121
         orderY = 122
         orderHeight = 29
-        orderBox = (orderCoordinates[position], orderY, orderCoordinates[position] + orderWidth, orderY + orderHeight)
+        orderBox = (
+                        orderCoordinates[position],
+                        orderY,
+                        orderCoordinates[position] + orderWidth,
+                        orderY + orderHeight
+                   )
         order = GameObject('Order Bubble', boundingBox = orderBox)
         return order
 
@@ -73,8 +86,13 @@ class Game:
         happinessWidth = 11
         happinessY = 216
         happinessHeight = 7
-        happinessBox = (happinessCoordinates[position], happinessY, happinessCoordinates[position] + happinessWidth, happinessY + happinessHeight)
-        happiness = GameObject('Happiness Indicator', boundingBox = happinessBox, colorSum = 442)
+        happinessBox = (
+                            happinessCoordinates[position],
+                            happinessY,
+                            happinessCoordinates[position] + happinessWidth,
+                            happinessY + happinessHeight
+                       )
+        happiness = GameObject('Happiness Indicator', boundingBox = happinessBox, colorSum = 548)
         return happiness
 
 
@@ -134,6 +152,27 @@ class Game:
         self.controller.clickMenu(self.skipButton)
         self.controller.clickMenu(self.continueButton)
 
+    def dealWithUnhappyCustomers(self):
+        unhappyCustomers = self.findUnhappyCustomers()
+        if len(unhappyCustomers) == 0: print 'Everyone looks happy'
+
+        for customer in unhappyCustomers:
+            print customer.name + ' is unhappy.'
+            self.serveSake(customer)
+
+    def findUnhappyCustomers(self):
+        return filter(lambda customer: customer.isUnhappy(self.vision.analyze(customer.happinessMeterLocation())), self.customers)
+
+    def serveSake(self, customer):
+        servableSake = filter(lambda sake: sake.soldOut() == False, self.sake)
+        if len(servableSake) > 0:
+            sake = servableSake[0]
+            print "Let's get " + customer.name + " drunk"
+            self.controller.clickOn(sake)
+            self.controller.dragTo(customer.plate)
+            self.controller.clickOn(customer.plate)
+            sake.consume()
+
     def getCustomerOrders(self):
         print 'Gathering customer orders'
         orders = map(lambda customer: self.vision.analyze(customer.orderBox()), self.customers)
@@ -165,6 +204,7 @@ if __name__ == "__main__":
     print 'Getting past menus'
     g.start()
     while True:
+        g.dealWithUnhappyCustomers()
         orders = g.getCustomerOrders()
         g.prepareCustomerOrders(orders)
         sleep(6)

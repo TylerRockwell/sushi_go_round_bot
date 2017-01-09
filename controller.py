@@ -20,6 +20,9 @@ class Controller:
         self.leftClick()
         sleep(.05)
 
+    def dragTo(self, obj):
+        pyautogui.dragTo(obj.coordinates[0] + self.gameLocation.xOffset, obj.coordinates[1] + self.gameLocation.yOffset, 1)
+
     # Debug method
     def getCursorPos(self):
         x, y = pyautogui.position()

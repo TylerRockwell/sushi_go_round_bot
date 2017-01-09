@@ -9,12 +9,14 @@ A python bot that can play [Sushi Go Round](http://www.miniclip.com/games/sushi-
 * Retrieves customer orders
 * Can prepare 6 different recipes
 * Automatically restocks ingredients when stock is low
+* Delivers sake to unhappy customers
 * Currently able to complete 4 levels
 
 #### Recent Changes
+* Sake delivery
+* Ability to monitor customer happiness
 * Added 2 new recipes
 * Contained all hard-coded coordinates within Game class
-* Skip recipes with out of stock ingredients
 
 #### Limitations
 * Currently implemented only on Retina display set to 1920x1200
@@ -23,4 +25,4 @@ A python bot that can play [Sushi Go Round](http://www.miniclip.com/games/sushi-
 * Orders are sometimes made twice
 * Occasionally tries to use ingredient before delivery is complete
 
-This bot is an Object Oriented approach to the [tutorial](https://code.tutsplus.com/tutorials/how-to-build-a-python-bot-that-can-play-web-games--active-11117) by Chris Kiehl
+This bot is an Object Oriented approach (and refinement beyond) this [tutorial](https://code.tutsplus.com/tutorials/how-to-build-a-python-bot-that-can-play-web-games--active-11117) by Chris Kiehl
