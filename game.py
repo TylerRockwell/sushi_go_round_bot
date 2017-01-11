@@ -24,7 +24,7 @@ class Game:
         self.coordinates = (0, 0)
         self.location = GameLocation(self.x_offset, self.y_offset, self.width, self.height)
         self.vision = Vision(self.location)
-        self.controller = Controller(self.location)
+        self.controller = Controller(self.x_offset, self.y_offset)
         self.phone = Phone()
         self._build_buttons()
         self._reset_food()
@@ -49,11 +49,11 @@ class Game:
 
     def _start(self):
         self._focus()
-        self.controller.clickOn(self.sound_button)
-        self.controller.clickOn(self.play_button)
-        self.controller.clickMenu(self.continue_button)
-        self.controller.clickMenu(self.skip_button)
-        self.controller.clickMenu(self.continue_button)
+        self.controller.click_on(self.sound_button)
+        self.controller.click_on(self.play_button)
+        self.controller.click_menu(self.continue_button)
+        self.controller.click_menu(self.skip_button)
+        self.controller.click_menu(self.continue_button)
 
     def _deal_with_unhappy_customers(self):
         unhappy_customers = self._find_unhappy_customers()
@@ -80,7 +80,7 @@ class Game:
     def _clear_tables(self):
         print 'Clearing tables'
         for customer in self.customers:
-            self.controller.clickOn(customer.plate)
+            self.controller.click_on(customer.plate)
 
     def _is_level_complete(self):
         return self.advanceButton.isPresent(self.vision.analyze(self.advanceButton.boundingBox))
@@ -91,12 +91,12 @@ class Game:
         # There are 2 continue buttons to start the next level
         for _ in xrange(2):
             print 'Advancing to next level'
-            self.controller.clickOn(self.advanceButton)
+            self.controller.click_on(self.advanceButton)
             sleep(1)
         self.reset_food()
 
     def _focus(self):
-        self.controller.clickOn(self)
+        self.controller.click_on(self)
 
     def _build_buttons(self):
         self.sound_button = Button('Sound', (302, 372), boundingBox=(499, 717, 768, 772))
@@ -198,31 +198,31 @@ class Game:
             return
         print 'Preparing ' + recipe.name
         for ingredient in recipe.ingredients:
-            self.controller.clickOn(ingredient)
+            self.controller.click_on(ingredient)
             ingredient.consume()
         self._roll_mat()
         for ingredient in recipe.lowIngredientList():
             self.restock(ingredient)
 
     def _roll_mat(self):
-        self.controller.clickOn(self.mat)
+        self.controller.click_on(self.mat)
         sleep(1.5)
 
     def _restock(self, food, attempt=0):
-        self.controller.clickMenu(self.phone)
-        self.controller.clickMenu(self.phone.menuFor(food))
+        self.controller.click_menu(self.phone)
+        self.controller.click_menu(self.phone.menuFor(food))
         # TODO: Clean this mess up
         location = tuple(map(lambda x: x*2, food.orderLocation()))
         pixel = self.vision.screenGrab().getpixel(location)
         print str(food.quantity) + ' ' + food.name + ' remaining. Trying to restock'
         if food.availableForOrder(pixel):
             print food.name + ' is available...Ordering'
-            self.controller.clickMenu(food.orderButton)
-            self.controller.clickMenu(self.phone.orderButton)
+            self.controller.click_menu(food.orderButton)
+            self.controller.click_menu(self.phone.orderButton)
             food.updateQuantity()
         else:
             print food.name + ' is unavailable...Hanging up'
-            self.controller.clickMenu(self.phone.hangUpButton)
+            self.controller.click_menu(self.phone.hangUpButton)
             print 'Waiting for income...'
             sleep(3)
             if attempt < 3:
@@ -241,9 +241,9 @@ class Game:
         if len(servable_sake) > 0:
             sake = servable_sake[0]
             print "Let's get " + customer.name + " drunk"
-            self.controller.clickOn(sake)
-            self.controller.dragTo(customer.plate)
-            self.controller.clickOn(customer.plate)
+            self.controller.click_on(sake)
+            self.controller.drag_to(customer.plate)
+            self.controller.click_on(customer.plate)
             sake.consume()
 
 
