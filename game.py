@@ -66,14 +66,14 @@ class Game:
 
     def _get_customer_orders(self):
         print 'Gathering customer orders'
-        orders = map(lambda customer: self.vision.analyze(customer.orderBox()), self.customers)
+        orders = map(lambda customer: self.vision.analyze(customer.order_box()), self.customers)
         # Reverse order to reduce last customer wait time
         orders.reverse()
         return orders
 
     def _prepare_customer_orders(self):
         for code in self.get_customer_orders:
-            results = filter(lambda recipe: recipe.withCode(code), self.recipes)
+            results = filter(lambda recipe: recipe.with_code(code), self.recipes)
             if results:
                 self._prepare_recipe(results[0])
 
@@ -88,9 +88,9 @@ class Game:
     def _advance_level(self):
         print 'Level complete'
         sleep(15)
+        print 'Advancing to next level'
         # There are 2 continue buttons to start the next level
         for _ in xrange(2):
-            print 'Advancing to next level'
             self.controller.click_on(self.advanceButton)
             sleep(1)
         self.reset_food()
@@ -102,12 +102,12 @@ class Game:
         self.sound_button = Button('Sound', (302, 372), boundingBox=(499, 717, 768, 772))
         self.play_button = Button('Play', (311, 206), boundingBox=(448, 342, 825, 477))
         self.continue_button = Button('Continue', (317, 393))
-        self.skip_button= Button('Skip', (579, 455))
+        self.skip_button = Button('Skip', (579, 455))
         self.advanceButton = Button('Advance', boundingBox=(348, 714, 931, 797), colorSum=49559)
 
     def _build_food(self):
         # This list is getting long...perhaps there are other classes hiding here
-        # name, type, location, orderButton location, unavailablePixel, startingQuantity
+        # name, type, location, order_button location, unavailable_pixel, starting_quantity
         self.rice = Food('Rice', 'Base', (88, 338), (516, 276), (118, 83, 85, 255), quantity=10)
         self.shrimp = Food('Shrimp', 'Topping', (41, 330), (461, 210), quantity=5)
         self.nori = Food('Nori', 'Topping', (40, 393), (464, 269), quantity=10)
@@ -194,14 +194,14 @@ class Game:
                        ]
 
     def _prepare_recipe(self, recipe):
-        if recipe.anyIngredientMissing():
+        if recipe.any_ingredient_missing():
             return
         print 'Preparing ' + recipe.name
         for ingredient in recipe.ingredients:
             self.controller.click_on(ingredient)
             ingredient.consume()
         self._roll_mat()
-        for ingredient in recipe.lowIngredientList():
+        for ingredient in recipe.low_ingredient_list():
             self.restock(ingredient)
 
     def _roll_mat(self):
@@ -212,14 +212,14 @@ class Game:
         self.controller.click_menu(self.phone)
         self.controller.click_menu(self.phone.menuFor(food))
         # TODO: Clean this mess up
-        location = tuple(map(lambda x: x*2, food.orderLocation()))
+        location = tuple(map(lambda x: x*2, food.order_location()))
         pixel = self.vision.screenGrab().getpixel(location)
         print str(food.quantity) + ' ' + food.name + ' remaining. Trying to restock'
-        if food.availableForOrder(pixel):
+        if food.available_for_order(pixel):
             print food.name + ' is available...Ordering'
-            self.controller.click_menu(food.orderButton)
+            self.controller.click_menu(food.order_button)
             self.controller.click_menu(self.phone.orderButton)
-            food.updateQuantity()
+            food.update_quantity()
         else:
             print food.name + ' is unavailable...Hanging up'
             self.controller.click_menu(self.phone.hangUpButton)
@@ -231,13 +231,13 @@ class Game:
     def _find_unhappy_customers(self):
         unhappy_customers = []
         for customer in self.customers:
-            if customer.isUnhappy(self.vision.analyze(customer.happinessMeterLocation())):
+            if customer.is_unhappy(self.vision.analyze(customer.happiness_meter_location())):
                 unhappy_customers.append(customer)
 
         return unhappy_customers
 
     def _serve_sake(self, customer):
-        servable_sake = filter(lambda sake: sake.soldOut() is False, self.sake)
+        servable_sake = filter(lambda sake: sake.sold_out() is False, self.sake)
         if len(servable_sake) > 0:
             sake = servable_sake[0]
             print "Let's get " + customer.name + " drunk"

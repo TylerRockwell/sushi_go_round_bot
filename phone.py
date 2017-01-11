@@ -14,4 +14,4 @@ class Phone:
         self.foodMenus = [self.toppingButton, self.riceButton, self.sakeButton]
 
     def menuFor(self, food):
-        return filter(lambda menu: menu.name == food.foodType, self.foodMenus)[0]
+        return filter(lambda menu: menu.name == food.food_type, self.foodMenus)[0]

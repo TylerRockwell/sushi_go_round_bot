@@ -5,12 +5,12 @@ class Customer:
         self.order = order
         self.happiness = happiness
 
-    def orderBox(self):
+    def order_box(self):
         return self.order.boundingBox
 
-    def isUnhappy(self, colorValue):
+    def is_unhappy(self, colorValue):
         # Checks for empty happiness ball
         return self.happiness.isPresent(colorValue)
 
-    def happinessMeterLocation(self):
+    def happiness_meter_location(self):
         return self.happiness.boundingBox

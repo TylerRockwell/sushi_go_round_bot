@@ -2,32 +2,32 @@ from game_object import *
 from button import *
 
 class Food(GameObject):
-    def __init__(self, name, foodType, coordinates, orderLocation, unavailablePixel = (109, 123, 127, 255), quantity = 0):
+    def __init__(self, name, food_type, coordinates, order_location, unavailable_pixel = (109, 123, 127, 255), quantity = 0):
         self.name = name
-        self.foodType = foodType
-        self.orderButton = Button('Order', orderLocation)
-        self.startingQuantity = quantity
-        self.quantity = quantity
-        self.unavailablePixel = unavailablePixel
+        self.food_type = food_type  # Make these 'types' separate classes
+        self.order_button = Button('Order', order_location)
+        self._starting_quantity = quantity
+        self.quantity = self._starting_quantity
+        self._unavailable_pixel = unavailable_pixel
         super(Food, self).__init__(name, coordinates)
 
-    def availableForOrder(self, pixel):
-        return not (pixel == self.unavailablePixel)
+    def available_for_order(self, pixel):
+        return not (pixel == self.unavailable_pixel)
 
-    def orderLocation(self):
-        return self.orderButton.coordinates
+    def order_location(self):
+        return self.order_button.coordinates
 
     def consume(self):
         self.quantity -= 1
 
-    def almostOut(self):
-        # Temporary special case
+    def almost_out(self):
+        # Temporary special case, will be resolved upon creation of Sake class
         if self.name == 'Sake':
             return False
         return self.quantity < 5
 
-    def soldOut(self):
+    def sold_out(self):
         return self.quantity == 0
 
-    def updateQuantity(self):
-        self.quantity += self.startingQuantity
+    def update_quantity(self):
+        self.quantity += self._starting_quantity
