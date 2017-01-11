@@ -1,3 +1,5 @@
+flake8
+pep8-naming
 Pillow
 pyscreenshot
 pyobjc-framework-Quartz
